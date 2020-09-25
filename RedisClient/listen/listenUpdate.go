@@ -45,8 +45,8 @@ func freshRedisDatas() {
 	db, _ := pgDatas.ConnectPG()
 	defer db.Close()
 
-   //缓存所有的用户信息
-   pgDatas.MasterDBCache(db)
+	//缓存所有的用户信息
+	pgDatas.MasterDBCache(db)
 
 
 }
