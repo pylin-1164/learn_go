@@ -130,8 +130,10 @@ func getGateway(addr *IpAdapterAddresses,ipaddr *IpAddress){
 func getIP(addr *IpAdapterAddresses,ipaddr *IpAddress) {
 	//fmt.Printf("%s \n",strconv.FormatUint(uint64(*(addr.FriendlyName)), 10))
 	unicastAddress := addr.FirstUnicastAddress
+	if unicastAddress == nil{
+		return
+	}
 	for {
-
 		ip := unicastAddress.Address.IP()
 		if strings.Contains(ip.String(), ":") {
 			ipaddr.Ipv6 = ip.String()

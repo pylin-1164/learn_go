@@ -3,10 +3,10 @@ package test
 import (
 	"fmt"
 	"net"
+	"regexp"
 	"testing"
 	"time"
 	"windows.api/basic"
-	"windows.api/device"
 	"windows.api/foreground"
 	"windows.api/process"
 	"windows.api/winservices"
@@ -37,9 +37,6 @@ func TestService(t *testing.T){
 	winservices.List()
 }
 
-func TestDevice(t *testing.T){
-	device.List()
-}
 
 func TestIp(t *testing.T){
 	basic.IpAddress()
@@ -61,4 +58,9 @@ func TestMac(t *testing.T){
 		}
 
 	}
+}
+
+func TestRegrex(t *testing.T){
+	fmt.Println(regexp.MatchString(process.ApplicationWhiteList,
+		" Tools for .Net 3.5"))
 }

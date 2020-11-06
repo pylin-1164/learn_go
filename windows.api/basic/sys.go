@@ -2,16 +2,34 @@ package basic
 
 import (
 	"fmt"
+	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	"strings"
+	"time"
 	"windows.api/api/iphlp"
 )
 
 
 func SysInfo() host.InfoStat{
 	info, _ := host.Info()
-	fmt.Printf("%+v \n",info)
 	return *info
+}
+
+func CpuInfo() []cpu.InfoStat{
+	info, err := cpu.Info()
+	if err != nil{
+		fmt.Println("get cpu data failed ... ")
+	}
+	return info
+}
+
+
+func CpuPercent() []float64{
+	percent, err := cpu.Percent(time.Second, true)
+	if err != nil{
+		fmt.Println("get cpu percent failed ... ")
+	}
+	return percent
 }
 
 func systemIsWinXP() bool{

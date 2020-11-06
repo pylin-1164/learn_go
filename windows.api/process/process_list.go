@@ -3,24 +3,61 @@ package process
 import (
 	"context"
 	"fmt"
+	"github.com/deckarep/golang-set"
 	"github.com/shirou/gopsutil/process"
 	"golang.org/x/sys/windows"
+	"regexp"
 )
 
-func List(){
+//白名单
+var WhiteListRegrex = `^C:\\Windows\\System32\\.*`
+
+type ProcessInfo struct {
+	ProcessName 		string
+	VersionInfo			*FileVersionInfo
+}
+
+func List() (processList []ProcessInfo){
 
 	processes, err := process.Processes()
 	if err != nil{
 		fmt.Println(err)
 	}
-	fmt.Println("process list size : ", len(processes))
+	processNameSet := mapset.NewSet()
 	for _, p := range processes {
 		if p.Pid != 0 {
-			if name, err := p.Name();err == nil{
-				fmt.Printf("%s \n",name)
+			name, err := p.Exe()
+			if err != nil{
+				continue
 			}
+
+			//同名进程去重
+			if(!processNameSet.Add(name)){
+				continue
+			}
+
+			compile, _ := regexp.MatchString(WhiteListRegrex, name)
+			if compile {
+				continue
+			}
+
+			//TODO查询EXE文件签名
+
+
+			versionInfo := QueryFileInfo(name)
+			if versionInfo == nil{
+				versionInfo = &FileVersionInfo{}
+			}
+			processInfo := ProcessInfo{
+				ProcessName: name,
+				VersionInfo: versionInfo,
+			}
+			processList = append(processList,processInfo)
 		}
 	}
+	return processList
+
+
 }
 
 //根据WindowsAPI自实现,兼容XP环境
