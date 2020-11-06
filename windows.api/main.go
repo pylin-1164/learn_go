@@ -2,13 +2,23 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"windows.api/basic"
 	"windows.api/device"
+	"windows.api/net"
 	"windows.api/process"
 	"windows.api/winservices"
 )
 
 func main() {
+
+
+	var RemoteServiceName = "Remote Desktop Services"
+	var FirewallServiceName = "Windows Firewall"
+	var RemoteProcessName = `Windows\\System32\\rdpclip.exe`
+	var remoteServiceStatus,firewallServiceStatus,remoteProcessStatus = false,false,false
+
+
 
 	//登录账号
 	fmt.Printf("当前使用人登录账号 : %s \n",basic.GetUserName())
@@ -39,11 +49,21 @@ func main() {
 
 
 
+
 	fmt.Printf("===========================%s=======================================\n","Windows服务列表")
 	//windows服务列表
 	serviceList := winservices.QueryServiceStatus()
 	for _,serviceInfo := range serviceList {
 		fmt.Printf("Service:%s  Name:%s Status:%s \n",serviceInfo.ServiceName,serviceInfo.ServiceDisplayName,serviceInfo.ServiceStatusCN)
+
+		//判断远程桌面是否打开
+		if RemoteServiceName == serviceInfo.ServiceDisplayName && serviceInfo.ServiceStatus == winservices.Service_Status_Running{
+			remoteServiceStatus = true
+		}
+		//判断防火墙是否打开
+		if FirewallServiceName == serviceInfo.ServiceDisplayName && serviceInfo.ServiceStatus == winservices.Service_Status_Running{
+			firewallServiceStatus = true
+		}
 	}
 
 	fmt.Printf("===========================%s=======================================\n","Windows系统IP网络信息")
@@ -58,6 +78,9 @@ func main() {
 	processList := process.List()
 	for _,processInfo := range processList {
 		fmt.Printf("%s    Version:%s    Company:%s \n",processInfo.ProcessName,processInfo.VersionInfo.Version,processInfo.VersionInfo.Company)
+		if match, _ := regexp.MatchString(RemoteProcessName, processInfo.ProcessName);match{
+			remoteProcessStatus = true
+		}
 	}
 
 
@@ -83,6 +106,33 @@ func main() {
 	applicationInfoList := process.GetApplicationList()
 	for _,applicationInfo := range applicationInfoList {
 		fmt.Printf("安装程序： %s 发行商：%s \n",applicationInfo.DisplayName,applicationInfo.Publisher)
+	}
+
+
+	fmt.Printf("===========================%s=======================================\n","Windows防火墙、远程桌面状态")
+
+	if firewallServiceStatus{
+		fmt.Printf("防火墙状态：   开启   \n")
+	}else{
+		fmt.Printf("防火墙状态：   关闭   \n")
+	}
+
+	if remoteServiceStatus{
+		fmt.Printf("远程桌面状态：   开启   \n")
+	}else{
+		fmt.Printf("远程桌面状态：   关闭   \n")
+	}
+	if remoteProcessStatus{
+		fmt.Printf("正在使用远程桌面：  是   \n")
+	}else{
+		fmt.Printf("正在使用远程桌面：  否   \n")
+	}
+
+	netStatus := net.NetWorkStatus()
+	if netStatus{
+		fmt.Printf("可以访问外网：  是   \n")
+	}else{
+		fmt.Printf("可以访问外网：  否   \n")
 	}
 }
 

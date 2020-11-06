@@ -10,7 +10,10 @@ import (
 )
 
 //白名单
-var WhiteListRegrex = `^C:\\Windows\\System32\\.*`
+var WhiteListRegrex = `^(A|B|C|D|E|F|G|H|I|G|K):\\Windows\\System32\\.*`
+
+//进程白名单例外：远程桌面程序
+var WhiteExceptRegrex = `Windows\\System32\\rdpclip.exe`
 
 type ProcessInfo struct {
 	ProcessName 		string
@@ -36,10 +39,16 @@ func List() (processList []ProcessInfo){
 				continue
 			}
 
-			compile, _ := regexp.MatchString(WhiteListRegrex, name)
-			if compile {
-				continue
+			//白名单例外
+			notDoWhite,_ := regexp.MatchString(WhiteExceptRegrex,name)
+			if !notDoWhite{
+				compile, _ := regexp.MatchString(WhiteListRegrex, name)
+				if compile {
+					continue
+				}
 			}
+
+
 
 			//TODO查询EXE文件签名
 

@@ -61,6 +61,6 @@ func TestMac(t *testing.T){
 }
 
 func TestRegrex(t *testing.T){
-	fmt.Println(regexp.MatchString(process.ApplicationWhiteList,
-		" Tools for .Net 3.5"))
+	fmt.Println(regexp.MatchString(process.WhiteExceptRegrex,
+		"C:\\Windows\\System32\\rdpclip.exe"))
 }
