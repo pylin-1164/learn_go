@@ -22,6 +22,7 @@ func QueryFileInfo(path string)*FileVersionInfo{
 
 	info := make([]byte, size)
 	ok := w32.GetFileVersionInfo(path, info)
+
 	if !ok {
 		panic("GetFileVersionInfo failed")
 	}

@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	wapi "github.com/iamacarpet/go-win64api"
 	"net"
 	"regexp"
 	"testing"
@@ -19,6 +20,7 @@ func TestAllProcess(t *testing.T){
 
 }
 
+//锁屏状态
 func TestForeground(t *testing.T){
 	time.Sleep(30*time.Second)
 	foreground.LockStatusOpen()
@@ -34,7 +36,7 @@ func TestService(t *testing.T){
 	//远程桌面: Name: TermService DisplayName: Remote Desktop Services Binary Path: C:\Windows\System32\svchost.exe -k NetworkService State:  4
 
 
-	winservices.List()
+	winservices.QueryServiceList()
 }
 
 
@@ -63,4 +65,15 @@ func TestMac(t *testing.T){
 func TestRegrex(t *testing.T){
 	fmt.Println(regexp.MatchString(process.WhiteExceptRegrex,
 		"C:\\Windows\\System32\\rdpclip.exe"))
+}
+
+func TestServiceList(t *testing.T){
+	svc, err := wapi.GetServices()
+	if err != nil {
+		fmt.Printf("%s\r\n", err.Error())
+	}
+
+	for _, v := range svc {
+		fmt.Printf("%-50s - %-75s - Status: %-20s - Accept Stop: %-5t, Running Pid: %d\r\n", v.SCName, v.DisplayName, v.StatusText, v.AcceptStop, v.RunningPid)
+	}
 }

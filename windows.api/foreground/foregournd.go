@@ -1,7 +1,7 @@
 package foreground
 
 import (
-	"log"
+	"fmt"
 	"syscall"
 )
 
@@ -16,9 +16,8 @@ func LockStatusOpen() bool{
 
 	if err != nil && err.Error() != successCallMessage {
 		return false
-		log.Println(err)
 	}
-	log.Println("activeWindowId:", activeWindowId)
+	fmt.Println("activeWindowId:", activeWindowId)
 	if activeWindowId == 0{
 		return true
 	}

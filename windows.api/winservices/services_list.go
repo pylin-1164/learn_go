@@ -2,10 +2,7 @@ package winservices
 
 import (
 	"fmt"
-	"github.com/shirou/gopsutil/winservices"
-	"golang.org/x/sys/windows"
-	"golang.org/x/sys/windows/svc/mgr"
-	"unsafe"
+	wapi "github.com/iamacarpet/go-win64api"
 )
 
 const (
@@ -42,71 +39,23 @@ type ServiceInfo struct {
 	ServiceStatusCN		string
 }
 
-func List(){
+//xp系统兼容版本请查看提交历史
 
-	services, _ := winservices.ListServices()
-
-	for _, service := range services {
-		func(){
-			defer func() {
-				e := recover()
-				if e != nil{
-					fmt.Printf("error :  %s \n",service.Name)
-				}
-
-			}()
-			newservice, _ := winservices.NewService(service.Name)
-			newservice.GetServiceDetail()
-
-			fmt.Println("Name:",newservice.Name,"DisplayName:", newservice.Config.DisplayName, "Binary Path:", newservice.Config.BinaryPathName, "State: ", newservice.Status.State)
-		}()
+func QueryServiceList()(serviceList []*ServiceInfo){
+	svc, err := wapi.GetServices()
+	if err != nil {
+		fmt.Printf("%s\r\n", err.Error())
 	}
-}
 
-
-/**
- * xp系统兼容
- */
-func QueryServiceStatus()(serviceList []*ServiceInfo){
-	services, _ := winservices.ListServices()
-	for _,s := range services {
-		serviceInfo := queryServiceByName(s)
-		if serviceInfo == nil{
-			continue
+	for _, v := range svc {
+		serviceInfo := ServiceInfo{
+			ServiceName:        v.SCName,
+			ServiceDisplayName: v.DisplayName,
+			ServiceStatus:      int(v.Status),
+			ServiceStatusCN:    ServiceStatusCNMap[int(v.Status)],
 		}
-		serviceList = append(serviceList,serviceInfo)
+		serviceList = append(serviceList,&serviceInfo)
+		//fmt.Printf("%-50s - %-75s - Status: %-20s - Accept Stop: %-5t, Running Pid: %d\r\n", v.SCName, v.DisplayName, v.StatusText, v.AcceptStop, v.RunningPid)
 	}
-	return serviceList
-}
-
-func queryServiceByName(s winservices.Service) *ServiceInfo{
-	defer func() {
-		e := recover()
-		if e != nil{
-			//fmt.Printf("error :  %s \n",s.Name)
-		}
-
-	}()
-
-	m, _ := mgr.Connect()
-	defer m.Disconnect()
-
-	service, _ := m.OpenService(s.Name)
-	var bytesNeeded uint32 = 2048
-	var buf []byte
-	var configBuf []byte
-
-	buf = make([]byte, bytesNeeded)
-	configBuf = make([]byte, bytesNeeded)
-	p := (*windows.SERVICE_STATUS_PROCESS)(unsafe.Pointer(&buf[0]))
-	cf := (*windows.QUERY_SERVICE_CONFIG)(unsafe.Pointer(&configBuf[0]))
-
-	windows.QueryServiceStatusEx(service.Handle, windows.SC_STATUS_PROCESS_INFO, &buf[0], uint32(len(buf)), &bytesNeeded)
-	windows.QueryServiceConfig(service.Handle,cf,uint32(len(configBuf)),&bytesNeeded)
-	return &ServiceInfo{
-		ServiceName:        service.Name,
-		ServiceDisplayName: windows.UTF16PtrToString(cf.DisplayName),
-		ServiceStatus:      int(p.CurrentState),
-		ServiceStatusCN:    ServiceStatusCNMap[int(p.CurrentState)],
-	}
+	return
 }
