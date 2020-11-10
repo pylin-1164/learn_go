@@ -33,6 +33,13 @@ func main() {
 	//系统信息
 	fmt.Printf("%+v \n",basic.SysInfo())
 
+	fmt.Printf("===========================%s=======================================\n","Windows系统IP网络信息")
+	//IPV4
+	ipAddresses := basic.IpAddress()
+	for _,addr := range ipAddresses {
+		fmt.Printf("%+v \n",*addr)
+	}
+
 	fmt.Printf("===========================%s=======================================\n","Windows系统CPU信息")
 	cpuInfos := basic.CpuInfo()
 	for _,cpuInfo := range cpuInfos {
@@ -60,7 +67,7 @@ func main() {
 	//windows服务列表
 	serviceList := winservices.QueryServiceList()
 	for _,serviceInfo := range serviceList {
-		fmt.Printf("Service:%s  Name:%s Status:%s \n",serviceInfo.ServiceName,serviceInfo.ServiceDisplayName,serviceInfo.ServiceStatusCN)
+		fmt.Printf("Service:%-40s  Name:%-50s Status:%-10s \n",serviceInfo.ServiceName,serviceInfo.ServiceDisplayName,serviceInfo.ServiceStatusCN)
 
 		//判断远程桌面是否打开
 		if RemoteServiceName == serviceInfo.ServiceDisplayName && serviceInfo.ServiceStatus == winservices.Service_Status_Running{
@@ -73,18 +80,12 @@ func main() {
 		}
 	}
 
-	fmt.Printf("===========================%s=======================================\n","Windows系统IP网络信息")
-	//IPV4
-	ipAddresses := basic.IpAddress()
-	for _,addr := range ipAddresses {
-		fmt.Printf("%+v \n",*addr)
-	}
 
 	fmt.Printf("===========================%s=======================================\n","Windows系统进程信息")
 	//进程列表
 	processList := process.List()
 	for _,processInfo := range processList {
-		fmt.Printf("%s    Version:%s    Company:%s \n",processInfo.ProcessName,processInfo.VersionInfo.Version,processInfo.VersionInfo.Company)
+		fmt.Printf("%-120s    Version:%-20s    Company:%-70s \n",processInfo.ProcessName,processInfo.VersionInfo.Version,processInfo.VersionInfo.Company)
 		if match, _ := regexp.MatchString(RemoteProcessName, processInfo.ProcessName);match{
 			remoteProcessStatus = true
 		}
@@ -115,7 +116,7 @@ func main() {
 	//查询安装程序列表
 	applicationInfoList := process.GetApplicationList()
 	for _,applicationInfo := range applicationInfoList {
-		fmt.Printf("安装程序： %s 发行商：%s \n",applicationInfo.DisplayName,applicationInfo.Publisher)
+		fmt.Printf("安装程序： %-70s 发行商：%-40s \n",applicationInfo.DisplayName,applicationInfo.Publisher)
 	}
 
 	foregroundStatus = foreground.LockStatusOpen()
